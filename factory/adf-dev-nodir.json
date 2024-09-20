@@ -1,0 +1,9 @@
+{
+	"name": "adf-dev-nodir",
+	"location": "eastasia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "eec510eb-3b5d-4dca-9fda-b4367433ccce",
+		"tenantId": "1cda93ed-9fa3-480f-8c1e-de2d2d4b27f2"
+	}
+}
