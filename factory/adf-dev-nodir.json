@@ -1,5 +1,10 @@
 {
 	"name": "adf-dev-nodir",
+	"properties": {
+		"globalConfigurations": {
+			"PipelineBillingEnabled": "true"
+		}
+	},
 	"location": "eastasia",
 	"identity": {
 		"type": "SystemAssigned",
