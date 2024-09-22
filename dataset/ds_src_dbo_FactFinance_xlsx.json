@@ -1,0 +1,22 @@
+{
+	"name": "ds_src_dbo_FactFinance_xlsx",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adls2_dev_nodir",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"sheetName": "sheet1",
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "dbo_FactFinance.xlsx",
+				"folderPath": "input",
+				"fileSystem": "analytics"
+			},
+			"firstRowAsHeader": true
+		},
+		"schema": []
+	}
+}

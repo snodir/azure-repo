@@ -1,0 +1,23 @@
+{
+	"name": "ds_sink_dbo_FactFinance_xlsx",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adls2_dev_nodir",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "output",
+				"fileSystem": "analytics"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": ""
+		},
+		"schema": []
+	}
+}
