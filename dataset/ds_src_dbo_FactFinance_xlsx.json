@@ -8,6 +8,7 @@
 		"annotations": [],
 		"type": "Excel",
 		"typeProperties": {
+			"sheetName": "sheet1",
 			"location": {
 				"type": "AzureBlobFSLocation",
 				"fileName": "dbo_FactFinance.xlsx",
