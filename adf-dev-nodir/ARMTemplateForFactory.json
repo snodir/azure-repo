@@ -14,6 +14,10 @@
 		"ls_adls2_dev_nodir_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://adls2devnodir.dfs.core.windows.net/"
+		},
+		"ls_kv_dev_nodir_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://kv-dev-nodir.vault.azure.net/"
 		}
 	},
 	"variables": {
@@ -27,7 +31,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "CopyFile",
+						"name": "CopyExcelFile",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
@@ -96,21 +100,33 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ls_adls2_dev_nodir')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"name": "[concat(parameters('factoryName'), '/ds_sink_dbo_FactFinance_xlsx')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_adls2_dev_nodir",
+					"type": "LinkedServiceReference"
+				},
 				"annotations": [],
-				"type": "AzureBlobFS",
+				"type": "DelimitedText",
 				"typeProperties": {
-					"url": "[parameters('ls_adls2_dev_nodir_properties_typeProperties_url')]",
-					"accountKey": {
-						"type": "SecureString",
-						"value": "[parameters('ls_adls2_dev_nodir_accountKey')]"
-					}
-				}
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "FactFinance.csv",
+						"folderPath": "output",
+						"fileSystem": "analytics"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": ""
+				},
+				"schema": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_adls2_dev_nodir')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/ds_src_dbo_FactFinance_xlsx')]",
@@ -140,33 +156,34 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ds_sink_dbo_FactFinance_xlsx')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
+			"name": "[concat(parameters('factoryName'), '/ls_adls2_dev_nodir')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_adls2_dev_nodir",
-					"type": "LinkedServiceReference"
-				},
 				"annotations": [],
-				"type": "DelimitedText",
+				"type": "AzureBlobFS",
 				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": "FactFinance.csv",
-						"folderPath": "output",
-						"fileSystem": "analytics"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": ""
-				},
-				"schema": []
+					"url": "[parameters('ls_adls2_dev_nodir_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('ls_adls2_dev_nodir_accountKey')]"
+					}
+				}
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_adls2_dev_nodir')]"
-			]
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_kv_dev_nodir')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('ls_kv_dev_nodir_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
 		}
 	]
 }

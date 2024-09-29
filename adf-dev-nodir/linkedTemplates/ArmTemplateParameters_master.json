@@ -11,6 +11,9 @@
 		"ls_adls2_dev_nodir_properties_typeProperties_url": {
 			"value": "https://adls2devnodir.dfs.core.windows.net/"
 		},
+		"ls_kv_dev_nodir_properties_typeProperties_baseUrl": {
+			"value": "https://kv-dev-nodir.vault.azure.net/"
+		},
 		"containerUri": {
 			"value": ""
 		},
