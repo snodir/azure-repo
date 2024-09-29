@@ -2,7 +2,7 @@
 	"name": "ds_sink_dbo_FactFinance_xlsx",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "ls_adls2_dev_nodir",
+			"referenceName": "ls_adls2_dev_nodir2",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
