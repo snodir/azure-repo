@@ -56,6 +56,34 @@
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "FailStatus",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "CopyExcelFile",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"url": "https://prod-06.germanywestcentral.logic.azure.com:443/workflows/505fccbb9efc4681893ea3c3b1b8f0e1/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=Mhr_XVvv1jUuhXGSTWodspZr9HJbDSKDunx4J6hcP3k",
+					"body": {
+						"value": "{\n    \"Pipeline\":\"@{pipeline().Pipeline}\",\n    \"ErrorMessage\":\"@{activity('CopyExcelFile').output.errors[0].Message}\",\n    \"RunID\":\"@{pipeline().RunId}\",\n    \"DataFactoryName\":\"@{pipeline().DataFactory}\"\n}",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"annotations": [],
