@@ -1,0 +1,59 @@
+{
+	"name": "CalculateTimeDiff",
+	"properties": {
+		"activities": [
+			{
+				"name": "v_startTime",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "v_startTime",
+					"value": {
+						"value": "2024-11-20T10:57:08.1458847Z",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "v_diff_in_Minutes",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "v_startTime",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "v_diff_in_Minutes",
+					"value": {
+						"value": "@string(div(sub(ticks(utcNow()), ticks(variables('v_startTime'))), 600000000))",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"v_startTime": {
+				"type": "String",
+				"defaultValue": "2024-11-20T10:57:08.1458847Z"
+			},
+			"v_diff_in_Minutes": {
+				"type": "String",
+				"defaultValue": "0"
+			}
+		},
+		"annotations": []
+	}
+}
