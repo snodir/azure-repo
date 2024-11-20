@@ -80,7 +80,7 @@
 					"method": "POST",
 					"url": "https://prod-01.germanywestcentral.logic.azure.com:443/workflows/d7d0a1618965488dbe591b48f1a31722/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=svqTS_ibQATMIcdvCnYpT-W7JCvSrNLxkp9aT5EPDxQ",
 					"body": {
-						"value": "{\n    \"Title\":\"ADF Pipeline Runs\",\n    \"Pipeline\":\"@{pipeline().Pipeline}\",\n    \"Message\":\"@{activity('CopyExcelFile').output.errors[0].Message}\",\n    \"RunID\":\"@{pipeline().RunId}\",\n    \"DataFactoryName\":\"@{pipeline().DataFactory}\",\n    \"Time\":\"@{utcNow()}\"\n}",
+						"value": "{\n    \"Title\":\"ADF Pipeline Runs\",\n    \"Pipeline\":\"@{pipeline().Pipeline}\",\n    \"Message\":\"@{activity('CopyExcelFile').output.errors[0].Message}\",\n    \"RunID\":\"@{pipeline().RunId}\",\n    \"DataFactoryName\":\"@{pipeline().DataFactory}\",\n    \"Time\":\"@{formatDateTime(utcNow())}\"\n}",
 						"type": "Expression"
 					}
 				}
@@ -108,7 +108,7 @@
 					"method": "POST",
 					"url": "https://prod-01.germanywestcentral.logic.azure.com:443/workflows/d7d0a1618965488dbe591b48f1a31722/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=svqTS_ibQATMIcdvCnYpT-W7JCvSrNLxkp9aT5EPDxQ",
 					"body": {
-						"value": "{\n    \"Title\":\"ADF Pipeline Runs\",\n    \"Pipeline\":\"@{pipeline().Pipeline}\",\n    \"Message\":\"@{activity('CopyExcelFile').output.executionDetails[0].status}\",\n    \"RunID\":\"@{pipeline().RunId}\",\n    \"DataFactoryName\":\"@{pipeline().DataFactory}\",\n    \"Time\":\"@{utcNow()}\"\n}",
+						"value": "{\n    \"Title\":\"ADF Pipeline Runs\",\n    \"Pipeline\":\"@{pipeline().Pipeline}\",\n    \"Message\":\"@{activity('CopyExcelFile').output.executionDetails[0].status}\",\n    \"RunID\":\"@{pipeline().RunId}\",\n    \"DataFactoryName\":\"@{pipeline().DataFactory}\",\n    \"Time\":\"@{formatDateTime(utcNow())}\"\n}",
 						"type": "Expression"
 					}
 				}
