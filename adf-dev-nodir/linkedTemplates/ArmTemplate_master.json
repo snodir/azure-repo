@@ -19,13 +19,13 @@
 			"type": "string",
 			"defaultValue": "https://adls2devnodir.dfs.core.windows.net/"
 		},
-		"ls_kv_dev_nodir_properties_typeProperties_baseUrl": {
-			"type": "string",
-			"defaultValue": "https://kv-dev-nodir.vault.azure.net/"
-		},
 		"ls_adls2_dev_nodir2_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://adls2devnodir.dfs.core.windows.net/"
+		},
+		"ls_kv_dev_nodir_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://kv-dev-nodir.vault.azure.net/"
 		},
 		"containerUri": {
 			"type": "string",
@@ -63,11 +63,11 @@
 					"ls_adls2_dev_nodir_properties_typeProperties_url": {
 						"value": "[parameters('ls_adls2_dev_nodir_properties_typeProperties_url')]"
 					},
-					"ls_kv_dev_nodir_properties_typeProperties_baseUrl": {
-						"value": "[parameters('ls_kv_dev_nodir_properties_typeProperties_baseUrl')]"
-					},
 					"ls_adls2_dev_nodir2_properties_typeProperties_url": {
 						"value": "[parameters('ls_adls2_dev_nodir2_properties_typeProperties_url')]"
+					},
+					"ls_kv_dev_nodir_properties_typeProperties_baseUrl": {
+						"value": "[parameters('ls_kv_dev_nodir_properties_typeProperties_baseUrl')]"
 					}
 				}
 			},

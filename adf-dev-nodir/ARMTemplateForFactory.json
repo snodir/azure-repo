@@ -19,19 +19,84 @@
 			"type": "string",
 			"defaultValue": "https://adls2devnodir.dfs.core.windows.net/"
 		},
-		"ls_kv_dev_nodir_properties_typeProperties_baseUrl": {
-			"type": "string",
-			"defaultValue": "https://kv-dev-nodir.vault.azure.net/"
-		},
 		"ls_adls2_dev_nodir2_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://adls2devnodir.dfs.core.windows.net/"
+		},
+		"ls_kv_dev_nodir_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://kv-dev-nodir.vault.azure.net/"
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/CalculateTimeDiff')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "v_startTime",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "v_startTime",
+							"value": {
+								"value": "2024-11-20T10:57:08.1458847Z",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "v_diff_in_Minutes",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "v_startTime",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "v_diff_in_Minutes",
+							"value": {
+								"value": "@string(div(sub(ticks(utcNow()), ticks(variables('v_startTime'))), 600000000))",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"v_startTime": {
+						"type": "String",
+						"defaultValue": "2024-11-20T10:57:08.1458847Z"
+					},
+					"v_diff_in_Minutes": {
+						"type": "String",
+						"defaultValue": "0"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/FileMovementInADLS2')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
@@ -94,6 +159,64 @@
 								"parameters": {}
 							}
 						]
+					},
+					{
+						"name": "FailStatus",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "CopyExcelFile",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "POST",
+							"headers": {},
+							"url": "https://prod-01.germanywestcentral.logic.azure.com:443/workflows/d7d0a1618965488dbe591b48f1a31722/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=svqTS_ibQATMIcdvCnYpT-W7JCvSrNLxkp9aT5EPDxQ",
+							"body": {
+								"value": "{\n    \"Title\":\"ADF Pipeline Runs\",\n    \"Pipeline\":\"@{pipeline().Pipeline}\",\n    \"Message\":\"@{activity('CopyExcelFile').output.errors[0].Message}\",\n    \"RunID\":\"@{pipeline().RunId}\",\n    \"DataFactoryName\":\"@{pipeline().DataFactory}\",\n    \"Time\":\"@{utcNow()}\"\n}",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SuccessStatus",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "CopyExcelFile",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "POST",
+							"headers": {},
+							"url": "https://prod-01.germanywestcentral.logic.azure.com:443/workflows/d7d0a1618965488dbe591b48f1a31722/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=svqTS_ibQATMIcdvCnYpT-W7JCvSrNLxkp9aT5EPDxQ",
+							"body": {
+								"value": "{\n    \"Title\":\"ADF Pipeline Runs\",\n    \"Pipeline\":\"@{pipeline().Pipeline}\",\n    \"Message\":\"@{activity('CopyExcelFile').output.executionDetails[0].status}\",\n    \"RunID\":\"@{pipeline().RunId}\",\n    \"DataFactoryName\":\"@{pipeline().DataFactory}\",\n    \"Time\":\"@{utcNow()}\"\n}",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"policy": {
@@ -181,19 +304,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ls_kv_dev_nodir')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureKeyVault",
-				"typeProperties": {
-					"baseUrl": "[parameters('ls_kv_dev_nodir_properties_typeProperties_baseUrl')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/ls_adls2_dev_nodir2')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -209,6 +319,168 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_kv_dev_nodir')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('ls_kv_dev_nodir_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/FileCopyThroughDF')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "DF",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "FailStatus",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "DF",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "POST",
+							"headers": {},
+							"url": "https://prod-01.germanywestcentral.logic.azure.com:443/workflows/d7d0a1618965488dbe591b48f1a31722/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=svqTS_ibQATMIcdvCnYpT-W7JCvSrNLxkp9aT5EPDxQ",
+							"body": {
+								"value": "{\n    \"Title\":\"ADF Pipeline Runs\",\n    \"Pipeline\":\"@{pipeline().Pipeline}\",\n    \"Message\":\"@{json(replace(activity('DF').Error.message,'\\','')).Message}\",\n    \"RunID\":\"@{pipeline().RunId}\",\n    \"DataFactoryName\":\"@{pipeline().DataFactory}\",\n    \"Time\":\"@{utcNow()}\"\n}",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SuccessStatus",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "DF",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "POST",
+							"headers": {},
+							"url": "https://prod-01.germanywestcentral.logic.azure.com:443/workflows/d7d0a1618965488dbe591b48f1a31722/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=svqTS_ibQATMIcdvCnYpT-W7JCvSrNLxkp9aT5EPDxQ",
+							"body": {
+								"value": "{\n    \"Title\":\"ADF Pipeline Runs\",\n    \"Pipeline\":\"@{pipeline().Pipeline}\",\n    \"Message\":\"@{activity('DF').output.runStatus.metrics.sink1.progressState}\",\n    \"RunID\":\"@{pipeline().RunId}\",\n    \"DataFactoryName\":\"@{pipeline().DataFactory}\",\n    \"Time\":\"@{utcNow()}\"\n}",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/DF')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_src_dbo_FactFinance_xlsx",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_sink_dbo_FactFinance_xlsx",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source1",
+						"source1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_src_dbo_FactFinance_xlsx')]",
+				"[concat(variables('factoryId'), '/datasets/ds_sink_dbo_FactFinance_xlsx')]"
+			]
 		}
 	]
 }
