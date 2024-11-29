@@ -1,0 +1,88 @@
+{
+	"name": "FileCopyThroughDF",
+	"properties": {
+		"activities": [
+			{
+				"name": "DF",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "FailStatus",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "DF",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"url": "https://prod-01.germanywestcentral.logic.azure.com:443/workflows/d7d0a1618965488dbe591b48f1a31722/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=svqTS_ibQATMIcdvCnYpT-W7JCvSrNLxkp9aT5EPDxQ",
+					"body": {
+						"value": "{\n    \"Title\":\"ADF Pipeline Runs\",\n    \"Pipeline\":\"@{pipeline().Pipeline}\",\n    \"Message\":\"@{json(replace(activity('DF').Error.message,'\\','')).Message}\",\n    \"RunID\":\"@{pipeline().RunId}\",\n    \"DataFactoryName\":\"@{pipeline().DataFactory}\",\n    \"Time\":\"@{utcNow()}\"\n}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "SuccessStatus",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "DF",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"url": "https://prod-01.germanywestcentral.logic.azure.com:443/workflows/d7d0a1618965488dbe591b48f1a31722/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=svqTS_ibQATMIcdvCnYpT-W7JCvSrNLxkp9aT5EPDxQ",
+					"body": {
+						"value": "{\n    \"Title\":\"ADF Pipeline Runs\",\n    \"Pipeline\":\"@{pipeline().Pipeline}\",\n    \"Message\":\"@{activity('DF').output.runStatus.metrics.sink1.progressState}\",\n    \"RunID\":\"@{pipeline().RunId}\",\n    \"DataFactoryName\":\"@{pipeline().DataFactory}\",\n    \"Time\":\"@{utcNow()}\"\n}",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"annotations": []
+	}
+}
