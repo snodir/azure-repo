@@ -7,17 +7,9 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "adf-dev-nodir"
 		},
-		"ls_adls2_dev_nodir_accountKey": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accountKey' of 'ls_adls2_dev_nodir'"
-		},
 		"ls_adls2_dev_nodir2_accountKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ls_adls2_dev_nodir2'"
-		},
-		"ls_adls2_dev_nodir_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://adls2devnodir.dfs.core.windows.net/"
 		},
 		"ls_adls2_dev_nodir2_properties_typeProperties_url": {
 			"type": "string",
@@ -96,6 +88,110 @@
 				"annotations": []
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/FileCopyThroughDF')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "DF",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "FailStatus",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "DF",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "POST",
+							"headers": {},
+							"url": "https://prod-01.germanywestcentral.logic.azure.com:443/workflows/d7d0a1618965488dbe591b48f1a31722/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=svqTS_ibQATMIcdvCnYpT-W7JCvSrNLxkp9aT5EPDxQ",
+							"body": {
+								"value": "{\n    \"Title\":\"ADF Pipeline Runs\",\n    \"Pipeline\":\"@{pipeline().Pipeline}\",\n    \"Message\":\"@{json(replace(activity('DF').Error.message,'\\','')).Message}\",\n    \"RunID\":\"@{pipeline().RunId}\",\n    \"DataFactoryName\":\"@{pipeline().DataFactory}\",\n    \"Time\":\"@{utcNow()}\"\n}",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "SuccessStatus",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "DF",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "POST",
+							"headers": {},
+							"url": "https://prod-01.germanywestcentral.logic.azure.com:443/workflows/d7d0a1618965488dbe591b48f1a31722/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=svqTS_ibQATMIcdvCnYpT-W7JCvSrNLxkp9aT5EPDxQ",
+							"body": {
+								"value": "{\n    \"Title\":\"ADF Pipeline Runs\",\n    \"Pipeline\":\"@{pipeline().Pipeline}\",\n    \"Message\":\"@{activity('DF').output.runStatus.metrics.sink1.progressState}\",\n    \"RunID\":\"@{pipeline().RunId}\",\n    \"DataFactoryName\":\"@{pipeline().DataFactory}\",\n    \"Time\":\"@{utcNow()}\"\n}",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/DF')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/FileMovementInADLS2')]",
@@ -287,23 +383,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ls_adls2_dev_nodir')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('ls_adls2_dev_nodir_properties_typeProperties_url')]",
-					"accountKey": {
-						"type": "SecureString",
-						"value": "[parameters('ls_adls2_dev_nodir_accountKey')]"
-					}
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/ls_adls2_dev_nodir2')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -332,110 +411,6 @@
 				}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/FileCopyThroughDF')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "DF",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "DF",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source1": {},
-									"sink1": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "FailStatus",
-						"type": "WebActivity",
-						"dependsOn": [
-							{
-								"activity": "DF",
-								"dependencyConditions": [
-									"Failed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"method": "POST",
-							"headers": {},
-							"url": "https://prod-01.germanywestcentral.logic.azure.com:443/workflows/d7d0a1618965488dbe591b48f1a31722/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=svqTS_ibQATMIcdvCnYpT-W7JCvSrNLxkp9aT5EPDxQ",
-							"body": {
-								"value": "{\n    \"Title\":\"ADF Pipeline Runs\",\n    \"Pipeline\":\"@{pipeline().Pipeline}\",\n    \"Message\":\"@{json(replace(activity('DF').Error.message,'\\','')).Message}\",\n    \"RunID\":\"@{pipeline().RunId}\",\n    \"DataFactoryName\":\"@{pipeline().DataFactory}\",\n    \"Time\":\"@{utcNow()}\"\n}",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "SuccessStatus",
-						"type": "WebActivity",
-						"dependsOn": [
-							{
-								"activity": "DF",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"method": "POST",
-							"headers": {},
-							"url": "https://prod-01.germanywestcentral.logic.azure.com:443/workflows/d7d0a1618965488dbe591b48f1a31722/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=svqTS_ibQATMIcdvCnYpT-W7JCvSrNLxkp9aT5EPDxQ",
-							"body": {
-								"value": "{\n    \"Title\":\"ADF Pipeline Runs\",\n    \"Pipeline\":\"@{pipeline().Pipeline}\",\n    \"Message\":\"@{activity('DF').output.runStatus.metrics.sink1.progressState}\",\n    \"RunID\":\"@{pipeline().RunId}\",\n    \"DataFactoryName\":\"@{pipeline().DataFactory}\",\n    \"Time\":\"@{utcNow()}\"\n}",
-								"type": "Expression"
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/DF')]"
-			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/DF')]",
@@ -481,6 +456,29 @@
 				"[concat(variables('factoryId'), '/datasets/ds_src_dbo_FactFinance_xlsx')]",
 				"[concat(variables('factoryId'), '/datasets/ds_sink_dbo_FactFinance_xlsx')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PBIReportToExcelSheetInAzBlob')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Wait_1sec",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 1
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
 		}
 	]
 }

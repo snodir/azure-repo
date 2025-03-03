@@ -7,17 +7,9 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "adf-dev-nodir"
 		},
-		"ls_adls2_dev_nodir_accountKey": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accountKey' of 'ls_adls2_dev_nodir'"
-		},
 		"ls_adls2_dev_nodir2_accountKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ls_adls2_dev_nodir2'"
-		},
-		"ls_adls2_dev_nodir_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://adls2devnodir.dfs.core.windows.net/"
 		},
 		"ls_adls2_dev_nodir2_properties_typeProperties_url": {
 			"type": "string",
@@ -54,14 +46,8 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
-					"ls_adls2_dev_nodir_accountKey": {
-						"value": "[parameters('ls_adls2_dev_nodir_accountKey')]"
-					},
 					"ls_adls2_dev_nodir2_accountKey": {
 						"value": "[parameters('ls_adls2_dev_nodir2_accountKey')]"
-					},
-					"ls_adls2_dev_nodir_properties_typeProperties_url": {
-						"value": "[parameters('ls_adls2_dev_nodir_properties_typeProperties_url')]"
 					},
 					"ls_adls2_dev_nodir2_properties_typeProperties_url": {
 						"value": "[parameters('ls_adls2_dev_nodir2_properties_typeProperties_url')]"
