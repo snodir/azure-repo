@@ -3,12 +3,26 @@
 	"properties": {
 		"globalConfigurations": {
 			"PipelineBillingEnabled": "true"
+		},
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
 		}
 	},
 	"location": "eastasia",
 	"identity": {
-		"type": "SystemAssigned",
+		"type": "SystemAssigned,UserAssigned",
 		"principalId": "eec510eb-3b5d-4dca-9fda-b4367433ccce",
-		"tenantId": "1cda93ed-9fa3-480f-8c1e-de2d2d4b27f2"
+		"tenantId": "1cda93ed-9fa3-480f-8c1e-de2d2d4b27f2",
+		"userAssignedIdentities": {
+			"/subscriptions/bbd3599b-b46d-4aa3-9916-ed9b13bf2380/resourcegroups/rg-nodir/providers/Microsoft.ManagedIdentity/userAssignedIdentities/adf-uami": {
+				"clientId": "993c3a79-c288-4065-855c-799fca108f44",
+				"principalId": "56a69cff-64c0-4186-a1ea-178864fd157b"
+			},
+			"/subscriptions/bbd3599b-b46d-4aa3-9916-ed9b13bf2380/resourcegroups/rg-nodir/providers/Microsoft.ManagedIdentity/userAssignedIdentities/uami-nodir": {
+				"clientId": "fc29b8f6-2bde-43b3-989c-0c5bd5d6dffd",
+				"principalId": "b872c913-1d64-4155-b795-dc42bcfff6d0"
+			}
+		}
 	}
 }

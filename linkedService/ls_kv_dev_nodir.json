@@ -1,5 +1,6 @@
 {
 	"name": "ls_kv_dev_nodir",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
 		"annotations": [],
 		"type": "AzureKeyVault",
